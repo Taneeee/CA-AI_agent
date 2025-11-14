@@ -13,7 +13,7 @@ import re
 import time
 
 st.set_page_config(
-    page_title="AI Investment Advisor - Multi-Agent System",
+    page_title="MoneyMind:AI Investment Advisor - Multi-Agent System",
     page_icon=None,
     layout="wide",
     initial_sidebar_state="expanded"
@@ -318,7 +318,7 @@ def get_cached_market_data():
     return st.session_state['market_data']
 
 
-st.markdown('<div class="main-header">AI-Powered Investment Advisor</div>', unsafe_allow_html=True)
+st.markdown('<div class="main-header">MoneyMind:AI-Powered Investment Advisor</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-header">Multi-Agent Intelligence System for Personalized Wealth Management</div>', unsafe_allow_html=True)
 st.markdown("---")
 
@@ -805,7 +805,7 @@ else:
     
     ---
     
-    ### 📊 System Status:
+    ### System Status:
     """)
     
     col1, col2, col3, col4 = st.columns(4)
@@ -859,11 +859,11 @@ with st.sidebar:
     st.markdown("---")
     st.subheader("Additional Features")
     
-    if st.button("👥 View Saved Profiles", use_container_width=True):
+    if st.button(" View Saved Profiles", use_container_width=True):
         st.session_state['show_profiles'] = True
     
     # Add refresh button for market data
-    if st.button("🔄 Refresh Market Data", use_container_width=True):
+    if st.button(" Refresh Market Data", use_container_width=True):
         if 'market_data' in st.session_state:
             del st.session_state['market_data']
         if 'market_data_timestamp' in st.session_state:
@@ -941,13 +941,3 @@ if st.session_state.get('show_profiles', False):
         st.session_state['show_profiles'] = False
         st.rerun()
 
-# Footer
-st.markdown("---")
-st.markdown(f"""
-<div style='text-align: center; color: #666; padding: 20px;'>
-    <p><strong>AI Investment Advisor v2.2</strong> | Powered by Multi-Agent Intelligence</p>
-    <p>Market Data: MarketWatch | Yahoo Finance | GoldAPI | Session Cache</p>
-    <p>Session Active: {'Yes ' if 'market_data' in st.session_state else 'No ⏳'}</p>
-    <p>© 2024 | Educational Purpose Only | Not Financial Advice</p>
-</div>
-""", unsafe_allow_html=True)
