@@ -1,4 +1,4 @@
-# app.py - Enhanced Streamlit Application with MarketWatch integration
+# app.py - Enhanced Streamlit Application with MarketWatch integration and Session State
 import os
 import requests
 import streamlit as st
@@ -180,7 +180,8 @@ def get_market_data():
         "gold_price": 0.0,
         "market_sentiment": "Neutral",
         "macro_indicators": {},
-        "data_source": ""
+        "data_source": "",
+        "timestamp": datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     }
 
     # 1. Try MarketWatch for Nifty 50
@@ -298,6 +299,25 @@ def get_market_data():
     return result
 
 
+def get_cached_market_data():
+    """
+    Get market data from session state or fetch new data
+    This ensures consistent data across the entire session
+    """
+    if 'market_data' not in st.session_state or 'market_data_timestamp' not in st.session_state:
+        # Fetch fresh data
+        st.session_state['market_data'] = get_market_data()
+        st.session_state['market_data_timestamp'] = datetime.now()
+    else:
+        # Check if data is older than 5 minutes
+        time_diff = (datetime.now() - st.session_state['market_data_timestamp']).total_seconds()
+        if time_diff > 300:  # 5 minutes
+            st.session_state['market_data'] = get_market_data()
+            st.session_state['market_data_timestamp'] = datetime.now()
+    
+    return st.session_state['market_data']
+
+
 st.markdown('<div class="main-header">AI-Powered Investment Advisor</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-header">Multi-Agent Intelligence System for Personalized Wealth Management</div>', unsafe_allow_html=True)
 st.markdown("---")
@@ -369,8 +389,8 @@ if generate_plan and name.strip():
     status_text.text("Collecting market data from MarketWatch...")
     progress_bar.progress(40)
     
-    # Fetch market data ONCE here
-    market_data = get_market_data()
+    # Fetch market data ONCE and store in session state
+    market_data = get_cached_market_data()
     
     with st.spinner('AI agents are analyzing thousands of investment options...'):
         analysis = agent.analyze_profile(user_data)
@@ -647,6 +667,7 @@ if generate_plan and name.strip():
     with tab5:
         st.header("Market Intelligence")
         
+        # Use the same market_data from session state
         col1, col2 = st.columns(2)
         
         with col1:
@@ -669,8 +690,9 @@ if generate_plan and name.strip():
                     sentiment
                 )
                 
-                # Show data source
+                # Show data source and timestamp
                 st.caption(f"Data source: {market_data.get('data_source', 'Multiple sources')}")
+                st.caption(f"Last updated: {market_data.get('timestamp', 'Unknown')}")
             else:
                 st.error("Unable to fetch live market data")
                 st.caption("Please check your internet connection or try again later")
@@ -783,7 +805,7 @@ else:
     
     ---
     
-    ###  System Status:
+    ### 📊 System Status:
     """)
     
     col1, col2, col3, col4 = st.columns(4)
@@ -799,10 +821,10 @@ else:
     
     st.markdown("---")
     
-    # Quick market preview
+    # Quick market preview - using session state
     st.subheader(" Quick Market Preview")
     with st.spinner("Fetching live market data from MarketWatch..."):
-        preview_data = get_market_data()
+        preview_data = get_cached_market_data()
     
     if preview_data.get('status') == 'success':
         col1, col2, col3 = st.columns(3)
@@ -813,11 +835,14 @@ else:
             )
         with col2:
             st.metric(
-                " Gold (10g)", 
+                "🪙 Gold (10g)", 
                 f"₹{preview_data.get('gold_price', 0):,.2f}"
             )
         with col3:
             st.info(f" Source: {preview_data.get('data_source', 'Multiple')}")
+        
+        # Show timestamp
+        st.caption(f" Last updated: {preview_data.get('timestamp', 'Unknown')}")
     else:
         st.info(" Market data will be fetched when you generate your investment plan")
     
@@ -834,16 +859,29 @@ with st.sidebar:
     st.markdown("---")
     st.subheader("Additional Features")
     
-    if st.button(" View Saved Profiles", use_container_width=True):
+    if st.button("👥 View Saved Profiles", use_container_width=True):
         st.session_state['show_profiles'] = True
+    
+    # Add refresh button for market data
+    if st.button("🔄 Refresh Market Data", use_container_width=True):
+        if 'market_data' in st.session_state:
+            del st.session_state['market_data']
+        if 'market_data_timestamp' in st.session_state:
+            del st.session_state['market_data_timestamp']
+        st.success("Market data will be refreshed on next fetch!")
+        st.rerun()
     
     with st.expander("System Information"):
         st.markdown(f"""
-        **Version**: 2.1 (Multi-Agent + MarketWatch)
+        **Version**: 2.2 (Session State + MarketWatch)
         **Agents**: 12+ specialized
         **Data Sources**: MarketWatch, Yahoo Finance, GoldAPI
         **Last Updated**: {datetime.now().strftime('%Y-%m-%d')}
-        **Status**: All systems operational
+        **Status**:  All systems operational
+        
+        **Session Data**:
+        - Market Data Cached: {'Yes' if 'market_data' in st.session_state else 'No'}
+        - Cache Timestamp: {st.session_state.get('market_data_timestamp', 'N/A')}
         """)
     
     with st.expander("Investment Tips"):
@@ -862,9 +900,11 @@ with st.sidebar:
         1.  MarketWatch (Primary)
         2.  Yahoo Finance (Fallback)
         3.  GoldAPI (Gold prices)
-        4.  Agent Cache (Recent data)
+        4.  Session Cache (Consistent)
         
-        *Data is cached for 5 minutes to optimize performance*
+        *Data is cached in session state for consistency*
+        *Auto-refreshes after 5 minutes*
+        *Use refresh button to force update*
         """)
 
 if st.session_state.get('show_profiles', False):
@@ -903,10 +943,11 @@ if st.session_state.get('show_profiles', False):
 
 # Footer
 st.markdown("---")
-st.markdown("""
+st.markdown(f"""
 <div style='text-align: center; color: #666; padding: 20px;'>
-    <p><strong>AI Investment Advisor v2.1</strong> | Powered by Multi-Agent Intelligence</p>
-    <p>Market Data: MarketWatch | Yahoo Finance | GoldAPI</p>
+    <p><strong>AI Investment Advisor v2.2</strong> | Powered by Multi-Agent Intelligence</p>
+    <p>Market Data: MarketWatch | Yahoo Finance | GoldAPI | Session Cache</p>
+    <p>Session Active: {'Yes ' if 'market_data' in st.session_state else 'No ⏳'}</p>
     <p>© 2024 | Educational Purpose Only | Not Financial Advice</p>
 </div>
 """, unsafe_allow_html=True)
