@@ -12,18 +12,14 @@ import asyncio
 from fake_useragent import UserAgent
 import brotli
 
-# ================================================================
-# ⚙️ Logger setup
-# ================================================================
+
 logging.basicConfig(
     level=logging.DEBUG,
     format="%(asctime)s - %(levelname)s - %(message)s"
 )
 logger = logging.getLogger(__name__)
 
-# ================================================================
-# 🧠 Agent 3: Stock Market Data Collection
-# ================================================================
+
 class StockDataAgent:
     """Fetch stock data safely with caching and rate-limit protection"""
 
@@ -167,14 +163,14 @@ class StockDataAgent:
                     
                     content = await response.read()
                     
-                    # Handle different content encodings
+ 
                     encoding = response.headers.get('Content-Encoding', '').lower()
                     if encoding == 'br':
                         content = brotli.decompress(content)
                     elif encoding == 'gzip':
                         content = await response.read()
                     
-                    # Ensure proper text decoding
+               
                     try:
                         return content.decode('utf-8')
                     except UnicodeDecodeError:
@@ -204,7 +200,7 @@ class StockDataAgent:
             logger.error(f"Invalid symbol: {symbol}")
             return {}
 
-        # --- cache check ---
+
         if symbol in self.cache:
             cached, timestamp = self.cache[symbol]
             if (datetime.now() - timestamp).seconds < self.cache_duration:
@@ -213,7 +209,7 @@ class StockDataAgent:
 
         clean_symbol = symbol.replace('.NS', '').lower()
         
-        # Prioritized source list with proper slugs
+
         sources = [
             (self.alternative_urls["marketwatch"], "marketwatch", f"{clean_symbol}"),
             (self.alternative_urls["google"], "google", f"{clean_symbol}"),
@@ -222,7 +218,7 @@ class StockDataAgent:
         
         for attempt in range(self.max_retries):
             try:
-                # Run async fetches with delay between attempts
+                
                 loop = asyncio.new_event_loop()
                 asyncio.set_event_loop(loop)
                 
@@ -234,7 +230,7 @@ class StockDataAgent:
                 )
                 loop.close()
                 
-                # Process responses in order of priority
+                
                 for html, (_, source) in zip(responses, urls):
                     if html:
                         price = self._parse_price_from_html(html, source)
@@ -268,9 +264,6 @@ class StockDataAgent:
             time.sleep(random.uniform(2, 4))
         return results
 
-# ================================================================
-# 💰 Agent 4: Mutual Fund Data Collection
-# ================================================================
 class MutualFundDataAgent:
     """Fetch Indian mutual fund NAVs from MFAPI"""
 
@@ -352,9 +345,6 @@ class MutualFundDataAgent:
             return 0
 
 
-# ================================================================
-# 🌐 Agent 5: Macroeconomic Data
-# ================================================================
 class MacroeconomicAgent:
     """Fetch live macro data (currently simulated for India)"""
 
@@ -388,9 +378,6 @@ class MacroeconomicAgent:
         return "Neutral"
 
 
-# ================================================================
-# 🗞️ Agent 6: News & Sentiment Analysis
-# ================================================================
 class NewsAgent:
     """Fetch market news and sentiment (NewsAPI demo)"""
 

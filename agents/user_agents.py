@@ -205,24 +205,24 @@ class ExpenseTrackingAgent:
         
         if savings_rate < 20:
             recommendations.append(
-                "⚠️ Try to increase savings rate to at least 20% by reducing discretionary expenses"
+                " Try to increase savings rate to at least 20% by reducing discretionary expenses"
             )
         
         if expense_ratio > 80:
             recommendations.append(
-                "💡 High expense ratio detected. Review and categorize expenses to identify savings opportunities"
+                " High expense ratio detected. Review and categorize expenses to identify savings opportunities"
             )
         
         if savings_rate >= 30:
             recommendations.append(
-                "✅ Excellent savings rate! Consider increasing investment contributions"
+                " Excellent savings rate! Consider increasing investment contributions"
             )
         
         # General recommendations
         recommendations.extend([
-            "📊 Use the 50-30-20 rule: 50% needs, 30% wants, 20% savings",
-            "🏦 Build emergency fund covering 6 months of expenses",
-            "📱 Track expenses regularly using budgeting apps"
+            "Use the 50-30-20 rule: 50% needs, 30% wants, 20% savings",
+            "Build emergency fund covering 6 months of expenses",
+            "Track expenses regularly using budgeting apps"
         ])
         
         return recommendations
